@@ -1,0 +1,555 @@
+
+MATCH (n) DETACH DELETE n;
+
+
+
+
+	
+
+
+
+
+
+
+	
+
+
+CREATE (:Manual_Datapoint { Name: 'Specific Gravity', ImmutableName: 'ManualDatapoint_1',					Id: 1, unitTypeId: 1, typeId: 1 });
+CREATE (:Manual_Datapoint { Name: 'Fluid Shot', ImmutableName: 'ManualDatapoint_2', 							Id: 2, unitTypeId: 2, typeId: 1 });
+CREATE (:Manual_Datapoint { Name: 'Flowing Friction Losses',  ImmutableName: 'ManualDatapoint_3',	Id: 3, unitTypeId: 3, typeId: 1 });
+CREATE (:Reading { Name: 'Tubing Pressure',  ImmutableName: 'Reading_4',							Id: 4, unitTypeId: 3, typeId: 2, highShutdown: 3000, highSlowdown: 2000, lowShutdown: 100, lowSlowdown: 150 });
+CREATE (:Reading { Name: 'Casing Pressure',  ImmutableName: 'Reading_5',							Id: 5, unitTypeId: 3, typeId: 2 });
+
+MATCH (specificGravity:Manual_Datapoint { Id: 1 })
+MATCH (fluidShot:Manual_Datapoint { Id: 2 })
+MATCH (flowingFrictionLosses:Manual_Datapoint { Id: 3 })
+MATCH (tubingPressure:Reading { Id: 4 })
+MATCH (casingPressure:Reading { Id: 5 })
+CREATE (totalNetLift:Formula {
+    Name: 'Total Net Lift',
+    ImmutableName: 'Formula_6',
+    Id: 6,
+    unitTypeId: 2,
+   	typeId: 20,
+    Expression: 'fluidShot * specificGravity + (tubingPressure - casingPressure + flowingFrictionLosses) / 1.42'
+})
+CREATE (specificGravity)<-[:Depends_On]-(totalNetLift)
+CREATE (fluidShot)<-[:Depends_On]-(totalNetLift)
+CREATE (flowingFrictionLosses)<-[:Depends_On]-(totalNetLift)
+CREATE (tubingPressure)<-[:Depends_On]-(totalNetLift)
+CREATE (casingPressure)<-[:Depends_On]-(totalNetLift);
+
+CREATE (:Manual_Datapoint { Name: 'pcp Displacement', ImmutableName: 'ManualDatapoint_7', 		Id: 7, unitTypeId: 4, typeId: 1 });
+
+MATCH (pcpDisplacement:Manual_Datapoint { Id: 7 })
+MATCH (totalNetLift:Formula { Id: 6 })
+CREATE (theoreticalPCPLiftTorque:Formula {
+    Name: 'Theoretical PCP Lift Torque',
+    ImmutableName: 'Formula_8',
+    Id: 8,
+    unitTypeId: 4,
+   	typeId: 20,
+    Expression: '(totalNetLift * pcpDisplacement) / 125'
+})
+CREATE (pcpDisplacement)<-[:Depends_On]-(theoreticalPCPLiftTorque)
+CREATE (totalNetLift)<-[:Depends_On]-(theoreticalPCPLiftTorque);
+
+CREATE (:Manual_Datapoint { Name: 'TopDrive Gear Ratio',  ImmutableName: 'ManualDatapoint_9',		Id: 9, unitTypeId: 0, typeId: 1 });
+CREATE (:Reading { Name: 'Electrical Torque',  ImmutableName: 'Reading_10',					Id: 10, unitTypeId: 5, typeId: 2 });
+
+MATCH (topDriveGearRatio:Manual_Datapoint { Id: 9 })
+MATCH (electricalTorque:Reading { Id: 10 })
+CREATE (pcpTorque:Formula {
+    Name: 'pcp Torque',
+    ImmutableName: 'Formula_11',
+    Id: 11,
+    unitTypeId: 5,
+   	typeId: 20,
+    Expression: 'electricalTorque * topDriveGearRatio'
+})
+CREATE (topDriveGearRatio)<-[:Depends_On]-(pcpTorque)
+CREATE (electricalTorque)<-[:Depends_On]-(pcpTorque);
+ 
+CREATE (:Manual_Datapoint { Name: 'pcp Torque Sum',  ImmutableName: 'ManualDatapoint_12',		Id: 12, unitTypeId: 5, typeId: 1 });
+CREATE (:Manual_Datapoint { Name: 'pcp Torque Count',  ImmutableName: 'ManualDatapoint_13',		Id: 13, unitTypeId: 0, typeId: 1 });
+
+MATCH (pcpTorqueSumForPeriod:Manual_Datapoint { Id: 12 })
+MATCH (pcpTorqueCountForPeriod:Manual_Datapoint { Id: 13 })
+CREATE (pcpAveragedTorque:Formula {
+    Name: 'Averaged PCP Torque',
+    ImmutableName: 'Formula_14',
+    Id: 14,
+    unitTypeId: 5,
+   	typeId: 20,
+    Expression: 'pcpTorqueSum / pcpTorqueCount'
+})
+CREATE (pcpTorqueSumForPeriod)<-[:Depends_On]-(pcpAveragedTorque)
+CREATE (pcpTorqueCountForPeriod)<-[:Depends_On]-(pcpAveragedTorque);
+
+MATCH (pcpAveragedTorque:Formula { Id: 14 })
+MATCH (theoreticalPCPLiftTorque:Formula { Id: 8 })
+CREATE (totalFrictionTorque:Formula {
+    Name: 'Total Friction Torque',
+    ImmutableName: 'Formula_15',
+    Id: 15,
+    unitTypeId: 5,
+   	typeId: 20,
+    Expression: 'averagedPCPTorque - theoreticalPCPLiftTorque'
+})
+CREATE (pcpAveragedTorque)<-[:Depends_On]-(totalFrictionTorque)
+CREATE (theoreticalPCPLiftTorque)<-[:Depends_On]-(totalFrictionTorque);
+
+MATCH (pcpAveragedTorque:Formula { Id: 14 })
+MATCH (totalFrictionTorque:Formula { Id: 15 })
+MATCH (pcpDisplacement:Manual_Datapoint { Id: 7 })
+MATCH (tubingPressure:Reading { Id: 4 })
+MATCH (casingPressure:Reading { Id: 5 })
+MATCH (flowingFrictionLosses:Manual_Datapoint { Id: 3 })
+MATCH (specificGravity:Manual_Datapoint { Id: 1 })
+CREATE (calculatedFluidLevel:Formula {
+    Name: 'Calculated Fluid Level',
+    ImmutableName: 'Formula_16',
+    Id: 16,
+    unitTypeId: 2,
+   	typeId: 20,
+    Expression: '(((averagedPCPTorque - totalFrictionTorque) / pcpDisplacement)-((tubingPressure - casingPressure + flowingFrictionLosses) / 1.42))/specificGravity'
+})
+CREATE (pcpAveragedTorque)<-[:Depends_On]-(calculatedFluidLevel)
+CREATE (totalFrictionTorque)<-[:Depends_On]-(calculatedFluidLevel)
+CREATE (pcpDisplacement)<-[:Depends_On]-(calculatedFluidLevel)
+CREATE (tubingPressure)<-[:Depends_On]-(calculatedFluidLevel)
+CREATE (casingPressure)<-[:Depends_On]-(calculatedFluidLevel)
+CREATE (flowingFrictionLosses)<-[:Depends_On]-(calculatedFluidLevel)
+CREATE (specificGravity)<-[:Depends_On]-(calculatedFluidLevel);
+
+CREATE (:Manual_Datapoint { Name: 'Motor HorsePower',  ImmutableName: 'ManualDatapoint_17',		Id: 17, unitTypeId: 6, typeId: 1 });
+CREATE (:Manual_Datapoint { Name: 'Motor RatedSpeed',  ImmutableName: 'ManualDatapoint_18',		Id: 18, unitTypeId: 7, typeId: 1 });
+
+MATCH (motorHorsePower:Manual_Datapoint { Id: 17 })
+MATCH (motorRatedSpeed:Manual_Datapoint { Id: 18 })
+CREATE (motorFullLoadTorque:Formula  {
+    Name: 'Motor FullLoad Torque',
+    ImmutableName: 'Formula_19',
+    Expression: '(motorHorsePower * 5252) / motorRatedSpeed',
+    Id: 19, 
+    unitTypeId: 5, 
+   	typeId: 20,
+    highShutdown: 0, highSlowdown: 0, lowShutdown: 0, lowSlowdown: 0
+})
+CREATE (motorHorsePower)<-[:Depends_On]-(motorFullLoadTorque)
+CREATE (motorRatedSpeed)<-[:Depends_On]-(motorFullLoadTorque);
+
+CREATE (:Manual_Datapoint { Name: 'Motor ServiceFactor',  ImmutableName: 'ManualDatapoint_20',		Id: 20, unitTypeId: 0, typeId: 1 });
+CREATE (:Manual_Datapoint { Name: 'Drive Shutdown Safety Factor',  ImmutableName: 'ManualDatapoint_21',		Id: 21, unitTypeId: 0, typeId: 1 });
+CREATE (:Manual_Datapoint { Name: 'Drive GearRatio',  ImmutableName: 'ManualDatapoint_22',		Id: 22, unitTypeId: 0, typeId: 1 });
+
+MATCH (motorServiceFactor:Manual_Datapoint { Id: 20 })
+MATCH (driveShutdownSafetyFactor:Manual_Datapoint { Id: 21 })
+MATCH (driveGearRatio:Manual_Datapoint { Id: 22 })
+MATCH (motorFullLoadTorque:Formula { Id: 19 })
+CREATE (driveShutdownTorque:Formula {
+    Name: 'Drive Shutdown Torque',
+    ImmutableName: 'Formula_23',
+    Expression: 'motorFullLoadTorque * driveShutdownSafetyFactor * motorServiceFactor * driveGearRatio',
+    Id: 23, 
+    unitTypeId: 5, 
+   	typeId: 20,
+    highShutdown: 0, highSlowdown: 0, lowShutdown: 0, lowSlowdown: 0
+})
+CREATE (motorServiceFactor)<-[:Depends_On]-(driveShutdownTorque)
+CREATE (driveShutdownSafetyFactor)<-[:Depends_On]-(driveShutdownTorque)
+CREATE (driveGearRatio)<-[:Depends_On]-(driveShutdownTorque)
+CREATE (motorFullLoadTorque)<-[:Depends_On]-(driveShutdownTorque);
+
+CREATE (:Manual_Datapoint { Name: 'Drive Slowdown Safety Factor',  ImmutableName: 'ManualDatapoint_24',		Id: 24, unitTypeId: 0, typeId: 1 });
+
+MATCH (driveGearRatio:Manual_Datapoint { Id: 22 })
+MATCH (driveSlowdownSafetyFactor:Manual_Datapoint { Id: 24 })
+MATCH (motorFullLoadTorque:Formula { Id: 19 })
+CREATE (driveSlowdownTorque:Formula {
+    Name: 'Drive Slowdown Torque',
+    ImmutableName: 'Formula_25',
+    Expression: 'motorFullLoadTorque * driveSlowdownSafetyFactor * driveGearRatio',
+    Id: 25, 
+    unitTypeId: 5, 
+   	typeId: 20,
+    highShutdown: 0, highSlowdown: 0, lowShutdown: 0, lowSlowdown: 0
+})
+CREATE (driveGearRatio)<-[:Depends_On]-(driveSlowdownTorque)
+CREATE (driveSlowdownSafetyFactor)<-[ r:Depends_On ]-(driveSlowdownTorque)
+CREATE (motorFullLoadTorque)<-[:Depends_On]-(driveSlowdownTorque);
+
+CREATE (:Reading { Name: 'Celsius Temperature',  ImmutableName: 'Reading_109',						Id: 109, unitTypeId: 8, typeId: 2 });
+
+MATCH (CelsiusTemperature:Reading { Id: 109 })
+CREATE (formula:Formula {
+    Name: 'Fahrenheit Temperature from Celsius',
+    ImmutableName: 'Formula_110',
+    Id: 110,
+    unitTypeId: 8,
+   	typeId: 20,
+    Expression: 'celsiusTemperature * (9/5) + 32',
+    period: 60000
+})
+CREATE (CelsiusTemperature)<-[:Depends_On]-(formula);
+
+CREATE (:Manual_Datapoint { Name: 'Ambient Heat Index Coefficient_1 Fahrenheit', ImmutableName: 'ManualDatapoint_111',	Id: 111, unitTypeId: 0, typeId: 1 });
+CREATE (:Manual_Datapoint { Name: 'Ambient Heat Index Coefficient_2 Fahrenheit', ImmutableName: 'ManualDatapoint_112',	Id: 112, unitTypeId: 0, typeId: 1 });
+CREATE (:Manual_Datapoint { Name: 'Ambient Heat Index Coefficient_3 Fahrenheit', ImmutableName: 'ManualDatapoint_113', 	Id: 113, unitTypeId: 0, typeId: 1 });
+CREATE (:Manual_Datapoint { Name: 'Ambient Heat Index Coefficient_4 Fahrenheit', ImmutableName: 'ManualDatapoint_114', 	Id: 114, unitTypeId: 0, typeId: 1 });
+CREATE (:Manual_Datapoint { Name: 'Ambient Heat Index Coefficient_5 Fahrenheit', ImmutableName: 'ManualDatapoint_115', 	Id: 115, unitTypeId: 0, typeId: 1 });
+CREATE (:Manual_Datapoint { Name: 'Ambient Heat Index Coefficient_6 Fahrenheit', ImmutableName: 'ManualDatapoint_116', 	Id: 116, unitTypeId: 0, typeId: 1 });
+CREATE (:Manual_Datapoint { Name: 'Ambient Heat Index Coefficient_7 Fahrenheit', ImmutableName: 'ManualDatapoint_117', 	Id: 117, unitTypeId: 0, typeId: 1 });
+CREATE (:Manual_Datapoint { Name: 'Ambient Heat Index Coefficient_8 Fahrenheit', ImmutableName: 'ManualDatapoint_118', 	Id: 118, unitTypeId: 0, typeId: 1 });
+CREATE (:Manual_Datapoint { Name: 'Ambient Heat Index Coefficient_9 Fahrenheit', ImmutableName: 'ManualDatapoint_119', 	Id: 119, unitTypeId: 0, typeId: 1 });
+
+CREATE (:Reading { Name: 'Relative Humidity', ImmutableName: 'Reading_120', 						Id: 120, unitTypeId: 9, typeId: 2 });
+
+MATCH (c1:Manual_Datapoint { Id: 111 })
+MATCH (c2:Manual_Datapoint { Id: 112 })
+MATCH (c3:Manual_Datapoint { Id: 113 })
+MATCH (c4:Manual_Datapoint { Id: 114 })
+MATCH (c5:Manual_Datapoint { Id: 115 })
+MATCH (c6:Manual_Datapoint { Id: 116 })
+MATCH (c7:Manual_Datapoint { Id: 117 })
+MATCH (c8:Manual_Datapoint { Id: 118 })
+MATCH (c9:Manual_Datapoint { Id: 119 })
+MATCH (T:Formula { Id: 110 })
+MATCH (R:Reading { Id: 120 })
+CREATE (formula:Formula {
+    Name: 'Ambient Heat Index Fahrenheit',
+    ImmutableName: 'Formula_121',
+    Id: 121,
+    unitTypeId: 0,
+   	typeId: 20,
+    Expression: 'ambientHeatIndexCoefficient_1Fahrenheit + ambientHeatIndexCoefficient_2Fahrenheit*fahrenheitTemperaturefromCelsius + ambientHeatIndexCoefficient_3Fahrenheit*relativeHumidity + ambientHeatIndexCoefficient_4Fahrenheit*fahrenheitTemperaturefromCelsius*relativeHumidity + ambientHeatIndexCoefficient_5Fahrenheit*fahrenheitTemperaturefromCelsius*fahrenheitTemperaturefromCelsius + ambientHeatIndexCoefficient_6Fahrenheit*relativeHumidity*relativeHumidity + ambientHeatIndexCoefficient_7Fahrenheit*fahrenheitTemperaturefromCelsius*fahrenheitTemperaturefromCelsius*relativeHumidity + ambientHeatIndexCoefficient_8Fahrenheit*fahrenheitTemperaturefromCelsius*relativeHumidity*relativeHumidity + ambientHeatIndexCoefficient_9Fahrenheit*fahrenheitTemperaturefromCelsius*fahrenheitTemperaturefromCelsius*relativeHumidity*relativeHumidity'
+})
+CREATE (c1)<-[:Depends_On]-(formula)
+CREATE (c2)<-[:Depends_On]-(formula)
+CREATE (c3)<-[:Depends_On]-(formula)
+CREATE (c4)<-[:Depends_On]-(formula)
+CREATE (c5)<-[:Depends_On]-(formula)
+CREATE (c6)<-[:Depends_On]-(formula)
+CREATE (c7)<-[:Depends_On]-(formula)
+CREATE (c8)<-[:Depends_On]-(formula)
+CREATE (c9)<-[:Depends_On]-(formula)
+CREATE (T)<-[:Depends_On]-(formula)
+CREATE (R)<-[:Depends_On]-(formula)
+;
+
+MATCH p = ()<-[:Depends_On]-(:Formula) return p
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+Rule (1): CYPHER
+
+   	
+   	
+CREATE (:RULE { Name: 'Slowdown Pump When Setpoint Breached', ImmutableName: 'Rule_26', Id: 26, typeId: 10 });
+CREATE (:CONDITION_ACTION { Name: 'SysLog.MSG', Value: 'PCP Torque greater than setpoint', Id: 27 });
+
+MATCH (Rule:RULE { Id: 26 })
+MATCH (LogAboveSetpointValueAction:CONDITION_ACTION { Id: 27 })
+MATCH (PCPTorqueFormula:Formula { Id: 11 })
+MATCH (DriveSlowdownTorqueFormula:Formula { Id: 25 })
+CREATE (SubCondition:IF_CONDITION { Name: 'pcp Torque greater than setpoint',  ImmutableName: 'pcp Torque greater than setpoint', Id: 28, Expression: 'pcpTorque > driveSlowdownTorque' })
+CREATE (SubCondition)-[ :Acts_ { Name: 'Does' } ]->(LogAboveSetpointValueAction)
+CREATE (Rule)-[ :If_ { Name: 'If' } ]->(SubCondition)
+CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(PCPTorqueFormula)
+CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(DriveSlowdownTorqueFormula);
+
+Rule (2): CYPHER
+
+CREATE (:RULE { Name: 'Change Pump Speed When Setpoints Breached', ImmutableName: 'Rule_29', Id: 29, typeId: 10 });
+CREATE (:CONDITION_ACTION { Name: 'SysLog.SETPOINTS_BREACHED', Value: '[DriveSlowdownTorque|DriveShutdownTorque]', Id: 30 });
+
+MATCH (Rule:RULE { Id: 29 })
+MATCH (LogAboveSetpointValueAction:CONDITION_ACTION { Id: 30 })
+MATCH (PCPTorqueFormula:Formula { Id: 11 })
+MATCH (DriveSlowdownTorqueFormula:Formula { Id: 25 })
+MATCH (DriveShutdownTorqueFormula:Formula { Id: 23 })
+CREATE (SubCondition:IF_CONDITION { Name: 'pcp Torque greater than setpoint(s)', ImmutableName: 'pcp Torque greater than setpoint(s)', Id: 31, Expression: 'pcpTorque > driveSlowdownTorque | pcpTorque > driveShutdownTorque' })
+CREATE (SubCondition)-[ :Acts_ { Name: 'Does' } ]->(LogAboveSetpointValueAction)
+CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(PCPTorqueFormula)
+CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(DriveSlowdownTorqueFormula)
+CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(DriveShutdownTorqueFormula)
+CREATE (Rule)-[ :If_ { Name: 'If' } ]->(SubCondition);
+
+	CREATE (:CONDITION_ACTION { Name: 'SysLog.STOP', Id: 32 });
+	CREATE (:CONDITION_ACTION { Name: 'SysLog.RUN', Value: '3500', Id: 33 });
+	CREATE (:CONDITION_ACTION { Name: 'SysLog.MSG', Value: 'The PCP Torque value is above average.', Id: 34 });
+	CREATE (:CONDITION_ACTION { Name: 'SysLog.MSG', Value: 'The PCP Torque value is above average.', Id: 35 });
+	
+	MATCH (SuperCondition:IF_CONDITION { Id: 31 })
+	MATCH (StopThePumpAction:CONDITION_ACTION { Id: 32 })
+	MATCH (PCPTorqueFormula:Formula { Id: 11 })
+	MATCH (DriveShutdownTorqueFormula:Formula { Id: 23 })
+	CREATE (SubCondition:IF_CONDITION { Name: 'pcp Torque greater than SHUTDOWN setpoint', ImmutableName: 'pcp Torque greater than SHUTDOWN setpoint', Id: 36, Expression: 'pcpTorque > driveShutdownTorque' })
+	CREATE (SubCondition)-[ :Acts_ { Name: 'Does' } ]->(StopThePumpAction)
+	CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(PCPTorqueFormula)
+	CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(DriveShutdownTorqueFormula)
+	CREATE (SuperCondition)-[ :If_ { Name: 'If' } ]->(SubCondition);
+	
+	MATCH (SuperCondition:IF_CONDITION { Id: 31 })
+	MATCH (LogAboveAvgValueAction:CONDITION_ACTION { Id: 34 })
+	MATCH (ElectricalTorqueReading:Reading { Id: 10 })
+	MATCH (PCPTorqueFormula:Formula { Id: 11 })
+	CREATE (SubCondition:ELSE_IF_CONDITION { Name: 'pcp Torque greater 5 times average', ImmutableName: 'pcp Torque greater 5 times average', Id: 37, Expression: 'pcpTorque > (5 * electricalTorque)' })
+	CREATE (SubCondition)-[ :Acts_ { Name: 'Does' } ]->(LogAboveAvgValueAction)
+	CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(ElectricalTorqueReading)
+	CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(PCPTorqueFormula)
+	CREATE (SuperCondition)-[ :Else_If_ { index: 0 } ]->(SubCondition);
+	
+	MATCH (SuperCondition:IF_CONDITION { Id: 31 })
+	MATCH (LogAboveAvgValueAction:CONDITION_ACTION { Id: 35})
+	MATCH (ElectricalTorqueReading:Reading { Id: 10 })
+	MATCH (PCPTorqueFormula:Formula { Id: 11 })
+	CREATE (SubCondition:ELSE_IF_CONDITION { Name: 'pcp Torque greater 10 times average', ImmutableName: 'pcp Torque greater 10 times average', Id: 38, Expression: 'pcpTorque > (10 * electricalTorque)' })
+	CREATE (SubCondition)-[ :Acts_ { Name: 'Does' } ]->(LogAboveAvgValueAction)
+	CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(ElectricalTorqueReading)
+	CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(PCPTorqueFormula)
+	CREATE (SuperCondition)-[ :Else_If_ { index: 1 } ]->(SubCondition);
+	
+	MATCH (SuperCondition:IF_CONDITION { Id: 31 })
+	MATCH (SlowThePumpAction:CONDITION_ACTION { Id: 33 })
+	CREATE (SubCondition:ELSE_CONDITION { Name: 'pcp Torque greater than SLOWDOWN setpoint', ImmutableName: 'pcp Torque greater than SLOWDOWN setpoint', Id: 39 })
+	CREATE (SubCondition)-[ :Acts_ { Name: 'Does' } ]->(SlowThePumpAction)
+	CREATE (SuperCondition)-[ :Else_Then { Name: 'Else' } ]->(SubCondition);
+
+CREATE (:CONDITION_ACTION { Name: 'SysLog.MSG', Value: 'The PCP Torque value is at the Slowdown setpoint.', Id: 40 });
+
+MATCH (LogValueAtSetpointAction:CONDITION_ACTION { Id: 40 })
+MATCH (Rule:RULE { Id: 29 })
+MATCH (PCPTorqueFormula:Formula { Id: 11 })
+MATCH (DriveSlowdownTorqueFormula:Formula { Id: 25 })
+CREATE (SubCondition:ELSE_IF_CONDITION { Name: 'pcp Torque equal to Slowdown setpoint', ImmutableName: 'pcp Torque equal to Slowdown setpoint', Id: 41, Expression: 'pcpTorque == driveSlowdownTorque' })
+CREATE (SubCondition)-[ :Acts_ { Name: 'Does' } ]->(LogValueAtSetpointAction)
+CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(PCPTorqueFormula)
+CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(DriveSlowdownTorqueFormula)
+CREATE (Rule)-[ :Else_If_ { index: 0 } ]->(SubCondition);
+
+	CREATE (:CONDITION_ACTION { Name: 'SysLog.MSG', Value: 'The PCP Torque value is at the Shutdown setpoint.', Id: 42 });
+	
+	MATCH (LogValueAtSetpointAction:CONDITION_ACTION { Id: 42 })
+	MATCH (SuperCondition:ELSE_IF_CONDITION { Id: 41 })
+	MATCH (PCPTorqueFormula:Formula { Id: 11 })
+	MATCH (DriveShutdownTorqueFormula:Formula { Id: 23 })
+	CREATE (SubCondition:IF_CONDITION { Name: 'pcp Torque greater than SHUTDOWN setpoint', ImmutableName: 'pcp Torque greater than SHUTDOWN setpoint', Id: 43, Expression: 'pcpTorque == driveShutdownTorque' })
+	CREATE (SubCondition)-[ :Acts_ { Name: 'Does' } ]->(LogValueAtSetpointAction)
+	CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(PCPTorqueFormula)
+	CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(DriveShutdownTorqueFormula)
+	CREATE (SuperCondition)-[ :If_ { Name: 'If' } ]->(SubCondition);
+
+CREATE (:CONDITION_ACTION { Name: 'SysLog.MSG', Value: 'The PCP Torque value is at the Shutdown setpoint.', Id: 44 });
+
+MATCH (LogValueAtSetpointAction:CONDITION_ACTION { Id: 44 })
+MATCH (Rule:RULE { Id: 29 })
+MATCH (PCPTorqueFormula:Formula { Id: 11 })
+MATCH (DriveShutdownTorqueFormula:Formula { Id: 23 })
+CREATE (SubCondition:ELSE_IF_CONDITION { Name: 'pcp Torque equal to Shutdown setpoint', ImmutableName: 'pcp Torque equal to Shutdown setpoint', Id: 45, Expression: 'pcpTorque == driveShutdownTorque' })
+CREATE (SubCondition)-[ :Acts_ { Name: 'Does' } ]->(LogValueAtSetpointAction)
+CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(PCPTorqueFormula)
+CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(DriveShutdownTorqueFormula)
+CREATE (Rule)-[ :Else_If_ { index: 1 } ]->(SubCondition);
+
+CREATE (:CONDITION_ACTION { Name: 'SysLog.NOP', Id: 46 });
+
+MATCH (NoOperationAction:CONDITION_ACTION { Id: 46 })
+MATCH (Rule:RULE { Id: 29 })
+CREATE (SubCondition:ELSE_CONDITION { Name: 'Setpoints not violated.', ImmutableName: 'Setpoints not violated.', Id: 47 })
+CREATE (SubCondition)-[ :Acts_ { Name: 'Does' } ]->(NoOperationAction)
+CREATE (Rule)-[ :Else_Then { Name: 'Else' } ]->(SubCondition);
+
+
+Rule (3): CYPHER
+
+CREATE (:RULE { Name: 'Nonsensical Test Rule That Depends On A Reading And Two Formulas', ImmutableName: 'Rule_100', Id: 100, typeId: 10 });
+CREATE (:CONDITION_ACTION { Name: 'SysLog.MSG', Value: 'Nonsensical test Rule that depends on a Reading and two Formulas (one Formula that is NOT a dependency of another Formula, and one that IS) fired.', Id: 101 });
+
+MATCH (NonsensicalRule:RULE { Id: 100 })
+MATCH (LogAction:CONDITION_ACTION { Id: 101 })
+MATCH (PCPTorqueFormula:FORMULA { Id: 11 })
+MATCH (TheoreticalPCPLiftTorqueFormula:FORMULA { Id: 8 })
+MATCH (TubingPressureReading:READING { Id: 4 })
+MATCH (DriveGearRatioManualDatapoint:MANUAL_DATAPOINT { Id: 22 })
+CREATE (SubCondition:IF_CONDITION { Name: 'Nonsensical test Rule that depends on two Readings and two Formulas', ImmutableName: 'Nonsensical test Rule that depends on two Readings and two Formulas', Id: 102, Expression: '(pcpTorque > theoreticalPCPLiftTorque) | (tubingPressure == driveGearRatio)' })
+CREATE (SubCondition)-[ :Acts_ { Name: 'Does' } ]->(LogAction)
+CREATE (NonsensicalRule)-[ :If_ { Name: 'If' } ]->(SubCondition)
+CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(PCPTorqueFormula)
+CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(TheoreticalPCPLiftTorqueFormula)
+CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(TubingPressureReading)
+CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(DriveGearRatioManualDatapoint);
+
+Rule (4): CYPHER
+
+CREATE (:RULE { Name: 'Test Rule For Scheduling', ImmutableName: 'Rule_103', Id: 103, period: 7000, typeId: 10 });
+CREATE (:CONDITION_ACTION { Name: 'SysLog.MSG', Value: 'Test Rule For Scheduling.', Id: 104 });
+
+MATCH (SchedulingRule:RULE { Id: 103 })
+MATCH (LogAction:CONDITION_ACTION { Id: 104 })
+MATCH (PCPTorqueFormula:FORMULA { Id: 11 })
+CREATE (SubCondition:IF_CONDITION { Name: 'PCP Torque is greater than one thousand', ImmutableName: 'PCP Torque is greater than one thousand', Id: 105, Expression: 'pcpTorque > 1000' })
+CREATE (SubCondition)-[ :Acts_ { Name: 'Does' } ]->(LogAction)
+CREATE (SchedulingRule)-[ :If_ { Name: 'If' } ]->(SubCondition)
+CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(PCPTorqueFormula);
+
+
+Rule (5): CYPHER
+
+CREATE (:RULE { Name: 'Test Realtime Rule For Electrical Torque', ImmutableName: 'Rule_106', Id: 106, typeId: 10 });
+CREATE (:CONDITION_ACTION { Name: 'SysLog.MSG', Value: 'pcpTorque > 1000.', Id: 107 });
+
+MATCH (SchedulingRule:RULE { Id: 106 })
+MATCH (LogAction:CONDITION_ACTION { Id: 107 })
+MATCH (PCPTorqueFormula:FORMULA { Id: 11 })
+CREATE (SubCondition:IF_CONDITION { Name: 'Should receive PCP Torque event.', ImmutableName: 'Should receive PCP Torque event.', Id: 108, Expression: 'pcpTorque > 1000' })
+CREATE (SubCondition)-[ :Acts_ { Name: 'Does' } ]->(LogAction)
+CREATE (SchedulingRule)-[ :If_ { Name: 'If' } ]->(SubCondition)
+CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(PCPTorqueFormula)
+;
+
+
+Rule (6): CYPHER
+Deprecated...
+
+
+
+
+
+
+
+
+
+
+
+    
+Rule (7): CYPHER
+Deprecated...
+
+
+
+Rule (8): CYPHER
+
+CREATE (:RULE { Name: 'Scheduled Rule With Isolated Dependency', ImmutableName: 'Rule_121', Id: 121, period: 10000, typeId: 10 });
+CREATE (:CONDITION_ACTION { Name: 'SysLog.MSG', Value: 'Scheduled Rule With Isolated Dependency.', Id: 122 });
+CREATE (:CONDITION_ACTION { Name: 'SysLog.MSG', Value: 'Scheduled Rule With Isolated Dependency ELSEd', Id: 124 });
+CREATE (:Manual_Datapoint { Name: 'Some Datapoint', ImmutableName: 'ManualDatapoint_123', 		Id: 123, unitTypeId: 0, typeId: 1 });
+
+MATCH (Rule:RULE { Id: 121 })
+MATCH (LogAction:CONDITION_ACTION { Id: 122 })
+MATCH (ManualDatapoint:Manual_Datapoint { Id: 123 })
+CREATE (SubCondition:IF_CONDITION { Name: 'Some Datapoint is greater than one thousand', ImmutableName: 'Some Datapoint is greater than one thousand', Id: 126, Expression: 'someDatapoint > 1000' })
+CREATE (SubCondition)-[ :Acts_ { Name: 'Does' } ]->(LogAction)
+CREATE (Rule)-[ :If_ { Name: 'If' } ]->(SubCondition)
+CREATE (SubCondition)-[ :Uses_ { Name: 'Uses' } ]->(ManualDatapoint);
+
+MATCH (Rule:RULE { Id: 121 })
+MATCH (LogAction:CONDITION_ACTION { Id: 124 })
+CREATE (SubCondition:ELSE_CONDITION { Name: 'ELSE condition fallthru', ImmutableName: 'ELSE condition fallthru', Id: 125 })
+CREATE (SubCondition)-[ :Acts_ { Name: 'Does' } ]->(LogAction)
+CREATE (Rule)-[ :Else_Then { Name: 'Else' } ]->(SubCondition);
+
+
+Miscellaneous stuff e.g. find Paths, remove nodes, etc. :
+
+Add some UNUSED (by Formulas/Rules) Readings & ManualDatapoints:
+
+CREATE (:Manual_Datapoint { Name: 'Unused_Manual_Datapoint_126', ImmutableName: 'ManualDatapoint_126', Id: 126, unitTypeId: 1, typeId: 1 });
+CREATE (:Manual_Datapoint { Name: 'Unused_Manual_Datapoint_127', ImmutableName: 'ManualDatapoint_127', Id: 126, unitTypeId: 1, typeId: 1 });
+CREATE (:Manual_Datapoint { Name: 'Unused_Manual_Datapoint_128', ImmutableName: 'ManualDatapoint_128', Id: 126, unitTypeId: 1, typeId: 1 });
+CREATE (:Reading { Name: 'Unused_Reading_129', ImmutableName: 'Reading_129', Id: 129, unitTypeId: 3, typeId: 2 });
+CREATE (:Reading { Name: 'Unused_Reading_130', ImmutableName: 'Reading_130', Id: 130, unitTypeId: 3, typeId: 2 });
+CREATE (:Reading { Name: 'Unused_Reading_131', ImmutableName: 'Reading_131', Id: 131, unitTypeId: 3, typeId: 2 });
+
+MATCH (md:Manual_Datapoint) WHERE md.id > 125 OPTIONAL MATCH (r:Reading) WHERE r.id > 125 OPTIONAL MATCH p = ()<-[:Depends_On]-(:Formula) RETURN *;
+MATCH (md:Manual_Datapoint) WHERE NOT (md)<-[:Depends_On]
+
+
+Simplified Match:
+
+MATCH p1 =  (:RULE)-[*]->()-[:ACTS_]->() 
+OPTIONAL MATCH p2 = (:RULE)-[*]->()-[:USES_]->() 
+RETURN *;
+
+
+
+
+
+
+
+
+
+ID Generation possibilities:
+See: https://rob.conery.io/2014/05/28/a-better-id-generator-for-postgresql/
+And, in the rare case that you're using the SQuirreL JDBC client, here: https://stackoverflow.com/a/42363575/888537
+
+CREATE SCHEMA shard_1;
+CREATE SEQUENCE shard_1.global_id_sequence;
+
+CREATE OR REPLACE FUNCTION shard_1.id_generator(OUT result bigint) AS $$
+DECLARE
+    our_epoch bigint := 1314220021721;
+    seq_id bigint;
+    now_millis bigint;
+    -- the id of this DB shard, must be set for each schema shard you have - you could pass this as a parameter too
+    shard_id int := 1;
+BEGIN
+    SELECT nextval('shard_1.global_id_sequence') % 1024 INTO seq_id;
+
+    SELECT FLOOR(EXTRACT(EPOCH FROM clock_timestamp()) * 1000) INTO now_millis;
+    result := (now_millis - our_epoch) << 23;
+    result := result | (shard_id << 10);
+    result := result | (seq_id);
+END;
+$$ LANGUAGE PLPGSQL;
+
+Usage:
+
+select shard_1.id_generator();
+
+CREATE (:Manual_Datapoint { Name: 'Some Datapoint w/FnGenerated ID', ImmutableName: 'Some Datapoint w/FnGenerated ID', 		Id:  (SELECT shard_1.id_generator()), unitTypeId: 0, typeId: 1 });
+
+
+
+CREATE (
+md:Manual_Datapoint { 
+   	Name: 'Some Datapoint w/sequenced ID', 
+	ImmutableName: (SELECT concat_ws('_', 'Some Datapoint With Generated ID', NEXTVAL('shard_1.global_id_sequence'))), 		
+	Id:  (SELECT CURRVAL('shard_1.global_id_sequence'))
+});
+
+
+MATCH (md:Manual_Datapoint { Name: 'Some Datapoint w/sequenced ID' }) RETURN md;
+returns: {
+   "name": "Some Datapoint w/sequenced ID",
+   "immutablename": "Some Datapoint With Generated ID_3",
+   "id": 3
+}
+
+Or, introduce a temporary property/value:
+CREATE (
+md:Manual_Datapoint { 
+   	Name: 'Some Datapoint w/sequenced ID', 
+	ImmutableName: (SELECT concat_ws('_', 'Some Datapoint With Generated ID', NEXTVAL('shard_1.global_id_sequence'))), 		
+	Id:  (SELECT CURRVAL('shard_1.global_id_sequence')),
+	idForInitialRetrieval: 666777888999
+}
+) 
+;

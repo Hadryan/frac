@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
+	<modelVersion>4.0.0</modelVersion>
+	<parent>
+		<groupId>org.springframework.boot</groupId>
+		<artifactId>spring-boot-starter-parent</artifactId>
+		<version>2.4.0</version>
+		<relativePath/> <!-- lookup parent from repository -->
+	</parent>
+	<groupId>com.srcnrg</groupId>
+	<artifactId>frac</artifactId>
+	<version>0.0.1-SNAPSHOT</version>
+	<name>frac</name>
+	<description>Spring Boot implementation of Formula, Rules and Actions Container</description>
+
+	<properties>
+		<java.version>11</java.version>
+		<spring-boot-starter-log4j2.version>2.4.0</spring-boot-starter-log4j2.version>
+		<mxparser.version>4.3.3</mxparser.version>
+		<agensgraph-jdbc.version>1.4.2-c1</agensgraph-jdbc.version>
+		<spring-boot-maven-plugin.version>2.4.0</spring-boot-maven-plugin.version>
+	</properties>
+
+	<dependencies>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-webflux</artifactId>
+			<exclusions>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-logging</artifactId>
+				</exclusion>
+				<exclusion>
+					<groupId>org.springframework.boot</groupId>
+					<artifactId>spring-boot-starter-actuator</artifactId>
+				</exclusion>
+			</exclusions>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-quartz</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-log4j2</artifactId>
+			<version>${spring-boot-starter-log4j2.version}</version>
+		</dependency>
+
+		<!-- Data access -->
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-jdbc</artifactId>
+		</dependency>
+
+		<dependency>
+			<groupId>net.bitnine</groupId>
+			<artifactId>agensgraph-jdbc</artifactId>
+			<version>${agensgraph-jdbc.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.mariuszgromada.math</groupId>
+			<artifactId>MathParser.org-mXparser</artifactId>
+			<version>${mxparser.version}</version>
+		</dependency>
+
+		<!-- Testing -->
+		<dependency>
+			<groupId>io.projectreactor</groupId>
+			<artifactId>reactor-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-starter-test</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
+
+	<build>
+		<plugins>
+			<plugin>
+				<groupId>org.springframework.boot</groupId>
+				<artifactId>spring-boot-maven-plugin</artifactId>
+				<version>${spring-boot-maven-plugin.version}</version>
+			</plugin>
+		</plugins>
+	</build>
+
+</project>
