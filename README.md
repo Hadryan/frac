@@ -14,7 +14,7 @@ So:
     * from the shell: 
       * createdb frac
       * agens frac
-        * from the PostgreSQLAgensGraph CLI:
+        * from the PostgreSQLAgensGraph CLI i.e. *agens*:
           * CREATE GRAPH frac;
           * \dG
           * \q
