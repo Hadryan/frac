@@ -10,8 +10,14 @@ So:
   * sudo docker run -itv agensGraphVolume:/home/agens/AgensGraph/data -p 80:8085 --name agensBrowser bitnine/agensBrowser /bin/bash
 * change into the home of the DB and start it up:
   * cd /home/agens/AgensGraph && ag_ctl start
-  * create the graph database (once is enough 8^):
-    * createdb frac
+  * create the graph database and the graph *in* the database (once is enough 8^):
+    * from the shell: 
+      * createdb frac
+      * agens frac
+        * from the PostgreSQLAgensGraph CLI:
+          * CREATE GRAPH frac;
+          * \dG
+          * \q
 * cd into the home of the webserver, configure it & start it (i.e. an executable JAR) up: 
   * cd /home/agens/AgensBrowser
   * vi agens-browser.config.yml:
