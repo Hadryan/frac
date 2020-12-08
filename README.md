@@ -2,12 +2,15 @@
 Formula and Rules engine w/Actions, contained
 
 #### Development with AgensGraph docker image(s)
-The bitnine/**agensBrowser** docker image comes with *AgensGraph DB* included but the webserver **doesn't start automagically**.
+The bitnine/**agensBrowser** docker image comes with *AgensGraph DB* included but **neither the DB nor the webserver start automagically**.
 So:
-* create a docker volume:
-  * eg agensGraphVolume: TBD
+* create a docker volume (so that the DB persists across restarts):
+  * eg agensGraphVolume:
+    * docker volume create agensGraphVolume
 * run the container w/the volume & shell: 
   * sudo docker run -itv agensGraphVolume:/home/agens/AgensGraph/data -p 80:8085 --name agensBrowser bitnine/agensBrowser /bin/bash
+* change into the home of the DB and start it up:
+  * cd /home/agens/AgensGraph && ag_ctl start
 * cd into the home of the webserver & start it up: 
   * cd /home/agens/AgensBrowser && ./agensbrowser.sh
 
