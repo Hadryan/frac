@@ -1,5 +1,6 @@
 //  Get all Vertices:
 // 	MATCH (n) return n;
+MATCH path = (:Formula)-[:Depends_On]->() return path;
 
 // Delete everything in the graph:
 MATCH (n) DETACH DELETE n;

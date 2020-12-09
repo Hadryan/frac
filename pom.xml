@@ -64,6 +64,13 @@
 		</dependency>
 
 		<!--  Utilities -->
+
+		<dependency>
+			<groupId>org.projectlombok</groupId>
+			<artifactId>lombok</artifactId>
+			<optional>true</optional>
+		</dependency>
+
 		<!-- Asynchronous logger -->
 		<dependency>
 			<groupId>com.lmax</groupId>
