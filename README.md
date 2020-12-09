@@ -28,9 +28,14 @@ So:
 
 On the machine hosting the docker container: browse to http://localhost
 
-https://github.com/bladewheels/frac/blob/master/src/test/resources/img/frac.agensBrowser.formula.example.png
+### AgensBrowser views:
 
-<img src="frac\src\test\resources\img\frac.agensBrowser.formula.example.png" width="800px" height="auto">
-
+#### A Formula:
 <img src="src/test/resources/img/frac.agensBrowser.formula.example.png" width="800px" height="auto">
+
+#### Lots of Formulas:
+<img src="src/test/resources/img/frac.agensBrowser.formula.example2.png" width="800px" height="auto">
+
+#### A closer look at some Formulas
+<img src="src/test/resources/img/frac.agensBrowser.formula.example3.png" width="800px" height="auto">
 
