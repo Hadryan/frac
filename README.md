@@ -1,15 +1,16 @@
 # frac: Formula and Rules engine w/Actions, contained.
 
 #### Development with AgensGraph docker image(s)
-The bitnine/**agensBrowser** docker image comes with *AgensGraph DB* included but **neither the DB nor the webserver start automagically** (however, the bitnine/agensGraph image/container **does** automagically startup the DB engine i.e. PostgreSQL).
+The bitnine/**agensBrowser** docker image comes with *AgensGraph DB* included but **the webserver doesn't start automagically**.
 So:
-* create a docker volume (so that the DB persists across restarts):
+* create a couple of docker volumes (so that the DB & webserver configuration persist across restarts):
   * eg agensGraphVolume:
     * docker volume create agensGraphVolume
-* run the container w/the volume & shell: 
-  * sudo docker run -itv agensGraphVolume:/home/agens/AgensGraph/data -p 80:8085 --name agensBrowser bitnine/agensBrowser /bin/bash
-* change into the home of the DB and start it up:
-  * cd /home/agens/AgensGraph && ag_ctl start
+    * docker volume create agensBrowserVolume
+* create the container w/the volumes. ports & shell, starting it as a daemon: 
+  * sudo docker run -itd -v agensGraphVolume:/home/agens/AgensGraph/data -v agensBrowserVolume:/home/agens/AgensBrowser -p 80:8085 -p 5432:5432 --name agensBrowser bitnine/agensBrowser /bin/bash
+* shell into the container:
+  * sudo docker exec -it agensBrowser /bin/bash
   * create the graph database and the graph *in* the database (once is enough 8^):
     * from the shell: 
       * createdb frac
