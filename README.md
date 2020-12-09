@@ -17,7 +17,7 @@ So:
       * agens frac
         * from the PostgreSQLAgensGraph CLI i.e. *agens*:
           * CREATE GRAPH frac;
-          * SET GRAPH_PATH = frac;
+          * ALTER USER agens SET GRAPH_PATH = frac;
           * \dG
           * \q
 * cd into the home of the webserver, configure it & start it (i.e. an executable JAR) up: 
