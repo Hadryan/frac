@@ -27,3 +27,5 @@ So:
   * ./agensbrowser.sh
 
 On the machine hosting the docker container: browse to http://localhost
+
+<img src="frac\src\test\resources\img\frac.agensBrowser.formula.example.png" width="800px" height="auto">
