@@ -99,19 +99,19 @@ MATCH (n) DETACH DELETE n;
 // CREATE (:Device { Name: 'IO@iWellSite R&D Labs', 				Id: -1 });
 // CREATE (:Device { Name: 'External Device', 						Id: 0 });
 
-MATCH (md_3:Manual_Datapoint { Id: 3 }) 
-MATCH (r_4:Reading { Id: 4 }) 
-MATCH (f_6:Formula { Id: 6 }) 
-CREATE (Formula_30:Formula { 
-Name: 'Formula_30', 
-ImmutableName: 'Formula_30', 
-Id: 30, 
-typeId: 20, 
-Expression: '$3$ * $4$ - $6$' 
-}) 
-CREATE (md_3)<-[:Depends_On]-(Formula_30)
-CREATE (r_4)<-[:Depends_On]-(Formula_30)
-CREATE (f_6)<-[:Depends_On]-(Formula_30)
+//MATCH (md_3:Manual_Datapoint { Id: 3 })
+//MATCH (r_4:Reading { Id: 4 })
+//MATCH (f_6:Formula { Id: 6 })
+//CREATE (Formula_30:Formula {
+//Name: 'Formula_30',
+//ImmutableName: 'Formula_30',
+//Id: 30,
+//typeId: 20,
+//Expression: '$3$ * $4$ - $6$'
+//})
+//CREATE (md_3)<-[:Depends_On]-(Formula_30)
+//CREATE (r_4)<-[:Depends_On]-(Formula_30)
+//CREATE (f_6)<-[:Depends_On]-(Formula_30)
 
 CREATE (:Manual_Datapoint { Name: 'Specific Gravity', ImmutableName: 'ManualDatapoint_1',					Id: 1, unitTypeId: 1, typeId: 1 });
 CREATE (:Manual_Datapoint { Name: 'Fluid Shot', ImmutableName: 'ManualDatapoint_2', 							Id: 2, unitTypeId: 2, typeId: 1 });
@@ -342,21 +342,21 @@ CREATE (R)<-[:Depends_On]-(formula)
 ;
 
 // Test new Expression syntax:
-CREATE (:Manual_Datapoint { Name: 'Renamable_Manual_Datapoint_122', ImmutableName: 'ManualDatapoint_122', Id: 122, unitTypeId: 1, typeId: 1 });
-CREATE (:Reading { Name: 'Renamable_Reading_123', ImmutableName: 'Reading_123', Id: 123, unitTypeId: 3, typeId: 2 });
-
-MATCH (renamableManualDatapoint122:Manual_Datapoint { Id: 122 })
-MATCH (renamableReading123:Reading { Id: 123 })
-CREATE (testFormula:Formula {
-    Name: 'Test Formula For Renaming Dependencies',
-    ImmutableName: 'Formula_124',
-    Id: 124,
-    unitTypeId: 2,
-   	typeId: 20,
-    Expression: '$122$ + 5 * $123$'
-})
-CREATE (renamableManualDatapoint122)<-[:Depends_On]-(testFormula)
-CREATE (renamableReading123)<-[:Depends_On]-(testFormula);
+//CREATE (:Manual_Datapoint { Name: 'Renamable_Manual_Datapoint_122', ImmutableName: 'ManualDatapoint_122', Id: 122, unitTypeId: 1, typeId: 1 });
+//CREATE (:Reading { Name: 'Renamable_Reading_123', ImmutableName: 'Reading_123', Id: 123, unitTypeId: 3, typeId: 2 });
+//
+//MATCH (renamableManualDatapoint122:Manual_Datapoint { Id: 122 })
+//MATCH (renamableReading123:Reading { Id: 123 })
+//CREATE (testFormula:Formula {
+//    Name: 'Test Formula For Renaming Dependencies',
+//    ImmutableName: 'Formula_124',
+//    Id: 124,
+//    unitTypeId: 2,
+//   	typeId: 20,
+//    Expression: '$122$ + 5 * $123$'
+//})
+//CREATE (renamableManualDatapoint122)<-[:Depends_On]-(testFormula)
+//CREATE (renamableReading123)<-[:Depends_On]-(testFormula);
 
 
 // SELECT all Formulas:
@@ -438,6 +438,8 @@ MATCH p = ()<-[:Depends_On]-(:Formula) return p
 //DROP    CONSTRAINT Else_Then_Name_exists ON Else_Then;
 //CREATE  CONSTRAINT Else_Then_Name_exists ON Else_Then ASSERT name IS NOT NULL;
 
+// CQL below uses (outdated) immutableName proerty
+//
 // 	Created below:
 //
 //		From top-of-my-head:
