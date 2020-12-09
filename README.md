@@ -28,4 +28,9 @@ So:
 
 On the machine hosting the docker container: browse to http://localhost
 
+https://github.com/bladewheels/frac/blob/master/src/test/resources/img/frac.agensBrowser.formula.example.png
+
 <img src="frac\src\test\resources\img\frac.agensBrowser.formula.example.png" width="800px" height="auto">
+
+<img src="frac/src/test/resources/img/frac.agensBrowser.formula.example.png" width="800px" height="auto">
+
