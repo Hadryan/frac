@@ -32,5 +32,5 @@ https://github.com/bladewheels/frac/blob/master/src/test/resources/img/frac.agen
 
 <img src="frac\src\test\resources\img\frac.agensBrowser.formula.example.png" width="800px" height="auto">
 
-<img src="frac/src/test/resources/img/frac.agensBrowser.formula.example.png" width="800px" height="auto">
+<img src="src/test/resources/img/frac.agensBrowser.formula.example.png" width="800px" height="auto">
 
