@@ -28,6 +28,11 @@ So:
 
 On the machine hosting the docker container: browse to http://localhost
 
+* you can stop/start/shell into the container as needed e.g 
+  * *sudo docker stop agensBrowser*
+  * *sudo docker start agensBrowser*
+  * *sudo docker exec -it agensBrowser /bin/bash*
+
 ### AgensBrowser views:
 
 #### A Formula:
