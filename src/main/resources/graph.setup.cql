@@ -117,8 +117,8 @@ MATCH (n) DETACH DELETE n;
 CREATE (:Manual_Datapoint { Name: 'Specific Gravity', ImmutableName: 'ManualDatapoint_1',					Id: 1, unitTypeId: 1, typeId: 1 });
 CREATE (:Manual_Datapoint { Name: 'Fluid Shot', ImmutableName: 'ManualDatapoint_2', 							Id: 2, unitTypeId: 2, typeId: 1 });
 CREATE (:Manual_Datapoint { Name: 'Flowing Friction Losses',  ImmutableName: 'ManualDatapoint_3',	Id: 3, unitTypeId: 3, typeId: 1 });
-CREATE (:Reading { Name: 'Tubing Pressure',  ImmutableName: 'Reading_4',							Id: 4, unitTypeId: 3, typeId: 2, highShutdown: 3000, highSlowdown: 2000, lowShutdown: 100, lowSlowdown: 150 });
-CREATE (:Reading { Name: 'Casing Pressure',  ImmutableName: 'Reading_5',							Id: 5, unitTypeId: 3, typeId: 2 });
+CREATE (:Reading { Name: 'Tubing Pressure',  ImmutableName: 'Reading_4',													Id: 4, unitTypeId: 3, typeId: 2, highShutdown: 3000, highSlowdown: 2000, lowShutdown: 100, lowSlowdown: 150 });
+CREATE (:Reading { Name: 'Casing Pressure',  ImmutableName: 'Reading_5',													Id: 5, unitTypeId: 3, typeId: 2 });
 
 // MATCH (sbc:Device { Name: 'SBC@iWellSite R&D Labs' })
 MATCH (specificGravity:Manual_Datapoint { Id: 1 })

@@ -17,6 +17,7 @@
 	<properties>
 		<java.version>11</java.version>
 		<spring-boot-starter-log4j2.version>2.4.0</spring-boot-starter-log4j2.version>
+		<spring-boot-configuration-processor.version>2.4.0</spring-boot-configuration-processor.version>
 		<mxparser.version>4.3.3</mxparser.version>
 		<disruptor.version>3.4.2</disruptor.version>
 		<agensgraph-jdbc.version>1.4.2-c1</agensgraph-jdbc.version>
@@ -82,6 +83,13 @@
 			<groupId>org.mariuszgromada.math</groupId>
 			<artifactId>MathParser.org-mXparser</artifactId>
 			<version>${mxparser.version}</version>
+		</dependency>
+
+		<dependency>
+			<groupId>org.springframework.boot</groupId>
+			<artifactId>spring-boot-configuration-processor</artifactId>
+			<version>${spring-boot-configuration-processor.version}</version>
+			<optional>true</optional>
 		</dependency>
 
 		<!-- Testing -->
