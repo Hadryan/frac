@@ -52,7 +52,7 @@ On the machine hosting the docker container: browse to http://localhost
 ##### A closer look at some Formulas
 <img src="src/test/resources/img/frac.agensBrowser.formula.example3.png" width="800px" height="auto">
 
-####### Open questions:
+###### Open questions:
 
 1) the trailing part of the JDBC URL used by AgensBrowser webserver's config specifies the DB to connect to e.g. 'frac'
     * the webserver config specifies 'agens' as the user to login to the DB as.
