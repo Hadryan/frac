@@ -1,6 +1,12 @@
 # frac: Formula and Rules engine w/Actions, contained.
 
-#### Development with AgensGraph docker image(s)
+### Development with SpringBoot Reactor & AgensGraph
+
+#### A view of the console when a Scheduled Formula is calculated and its sole dependency has been updated from its default value i.e. null:
+
+<img src="src/test/resources/img/running.console.withScheduledFormula.calculatingAfterDependencyUpdated.png" width="800px" height="auto">
+
+### Development with AgensGraph docker image(s)
 The bitnine/**agensBrowser** docker image comes with *AgensGraph DB* included but **the webserver doesn't start automagically**.
 So:
 * create a couple of docker volumes (so that the DB & webserver configuration persist across restarts):
@@ -35,18 +41,18 @@ On the machine hosting the docker container: browse to http://localhost
   * *sudo docker start agensBrowser*
   * *sudo docker exec -it agensBrowser /bin/bash*
 
-### AgensBrowser views:
+#### AgensBrowser views:
 
-#### A Formula:
+##### A Formula:
 <img src="src/test/resources/img/frac.agensBrowser.formula.example.png" width="800px" height="auto">
 
-#### Lots of Formulas:
+##### Lots of Formulas:
 <img src="src/test/resources/img/frac.agensBrowser.formula.example2.png" width="800px" height="auto">
 
-#### A closer look at some Formulas
+##### A closer look at some Formulas
 <img src="src/test/resources/img/frac.agensBrowser.formula.example3.png" width="800px" height="auto">
 
-###### Open questions:
+####### Open questions:
 
 * the trailing part of the JDBC URL used by AgensBrowser webserver's config specifies the DB to connect to e.g. 'frac'
   * the webserver config specifies 'agens' as the user to login to the DB as.
