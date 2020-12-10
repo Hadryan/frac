@@ -55,9 +55,9 @@ On the machine hosting the docker container: browse to http://localhost
 ####### Open questions:
 
 1) the trailing part of the JDBC URL used by AgensBrowser webserver's config specifies the DB to connect to e.g. 'frac'
-  * the webserver config specifies 'agens' as the user to login to the DB as.
-  * issuing the ALTER USER agens SET graph_path = frac supposedly sets the graph path for the user, forever.
-  * however, by default the JDBC URL's trailing part is set to 'agens'
-    * Cipher statements issued thru such a webserver act on the 'agens_graph' graph
-      * what is the relationship between graph_path and a named DB?
-      * can a DB have **multiple** graphs?
+    * the webserver config specifies 'agens' as the user to login to the DB as.
+    * issuing the ALTER USER agens SET graph_path = frac supposedly sets the graph path for the user, forever.
+    * however, by default the JDBC URL's trailing part is set to 'agens'
+      * Cipher statements issued thru such a webserver act on the 'agens_graph' graph
+        * what is the relationship between graph_path and a named DB?
+        * can a DB have **multiple** graphs?
