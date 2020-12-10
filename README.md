@@ -2,7 +2,7 @@
 
 ### Development with SpringBoot Reactor & AgensGraph
 
-#### A view of the console when a Scheduled Formula is calculated and its sole dependency has been updated from its default value i.e. null:
+#### A view of the console when a Scheduled Formula (Celsius to Farenheit) is calculated and its sole dependency (Celsius Temperature Reading) has recently been updated from its default value of null to 15, also showing another Formula attempting to calculate its value due to the Scheduled Formula broadcasting a new calculated value to it:
 
 <img src="src/test/resources/img/frac.running.console.withScheduledFormula.calculatingAfterDependencyUpdated.png" width="800px" height="auto">
 
