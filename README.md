@@ -23,7 +23,9 @@ So:
 * cd into the home of the webserver, configure it & start it (i.e. an executable JAR) up: 
   * cd /home/agens/AgensBrowser
   * vi agens-browser.config.yml:
-    * change agens:outer:datasource:graph_path to: frac
+    * in the agens:outer:datasource section:
+      * change the trailing path segment of url from: agens to: frac
+      * change graph_path to: frac
   * ./agensbrowser.sh
 
 On the machine hosting the docker container: browse to http://localhost
