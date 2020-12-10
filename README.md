@@ -4,7 +4,7 @@
 
 #### A view of the console when a Scheduled Formula is calculated and its sole dependency has been updated from its default value i.e. null:
 
-<img src="src/test/resources/img/running.console.withScheduledFormula.calculatingAfterDependencyUpdated.png" width="800px" height="auto">
+<img src="src/test/resources/img/frac.running.console.withScheduledFormula.calculatingAfterDependencyUpdated.png" width="800px" height="auto">
 
 ### Development with AgensGraph docker image(s)
 The bitnine/**agensBrowser** docker image comes with *AgensGraph DB* included but **the webserver doesn't start automagically**.
