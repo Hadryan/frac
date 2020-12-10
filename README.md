@@ -54,7 +54,7 @@ On the machine hosting the docker container: browse to http://localhost
 
 ####### Open questions:
 
-* the trailing part of the JDBC URL used by AgensBrowser webserver's config specifies the DB to connect to e.g. 'frac'
+1) the trailing part of the JDBC URL used by AgensBrowser webserver's config specifies the DB to connect to e.g. 'frac'
   * the webserver config specifies 'agens' as the user to login to the DB as.
   * issuing the ALTER USER agens SET graph_path = frac supposedly sets the graph path for the user, forever.
   * however, by default the JDBC URL's trailing part is set to 'agens'
