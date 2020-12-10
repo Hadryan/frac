@@ -17,13 +17,15 @@ So:
       * agens frac
         * from the PostgreSQLAgensGraph CLI i.e. *agens*:
           * CREATE GRAPH frac;
-          * SET GRAPH_PATH = frac;
+          * ALTER USER agens SET GRAPH_PATH = frac;
           * \dG
           * \q
 * cd into the home of the webserver, configure it & start it (i.e. an executable JAR) up: 
   * cd /home/agens/AgensBrowser
   * vi agens-browser.config.yml:
-    * change agens:outer:datasource:graph_path to: frac
+    * in the agens:outer:datasource section:
+      * change the trailing path segment of url from: agens to: frac
+      * change graph_path to: frac
   * ./agensbrowser.sh
 
 On the machine hosting the docker container: browse to http://localhost
@@ -44,3 +46,12 @@ On the machine hosting the docker container: browse to http://localhost
 #### A closer look at some Formulas
 <img src="src/test/resources/img/frac.agensBrowser.formula.example3.png" width="800px" height="auto">
 
+###### Open questions:
+
+* the trailing part of the JDBC URL used by AgensBrowser webserver's config specifies the DB to connect to e.g. 'frac'
+  * the webserver config specifies 'agens' as the user to login to the DB as.
+  * issuing the ALTER USER agens SET graph_path = frac supposedly sets the graph path for the user, forever.
+  * however, by default the JDBC URL's trailing part is set to 'agens'
+    * Cipher statements issued thru such a webserver act on the 'agens_graph' graph
+      * what is the relationship between graph_path and a named DB?
+      * can a DB have **multiple** graphs?
