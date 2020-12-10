@@ -1,5 +1,21 @@
 # frac: Formula and Rules engine w/Actions, contained.
 
+*Formulas* are mathematical expressions comprised of *Readings and/or Constants* and mathematical functions or operators  
+e.g. ambientWindspeedInKilometresPerHour = 1.6 * + ambientWindspeedInMilesPerHour
+
+*Readings* are values that can be updated over time e.g. temperature outside right now  
+*Constants* are values that rarely, if ever, change e.g. G = 6.674×10−11 m3⋅kg−1⋅s−2  
+
+The **Frac** system:  
+  * holds *Formulae* 
+  * exposes HTTP POST endpoints for *Readings* to update their values
+    * updates will trigger a re-calculation of any and all pertinent *Formulae*.
+  * exposes HTTP POST endpoints for *Formulae* to update their definitions
+  
+The results of *Formula* calculations can serve as *Readings* for other *Formulas*.  
+
+<img src="src/test/resources/img/frac.Formula.calculation.png" width="800px" height="auto">
+
 ### Development with SpringBoot Reactor & AgensGraph
 
 #### A view of the console when a Scheduled Formula (Celsius to Farenheit) is calculated and its sole dependency (Celsius Temperature Reading) has recently been updated from its default value of null to 15, also showing another Formula attempting to calculate its value due to the Scheduled Formula broadcasting a new calculated value to it:
